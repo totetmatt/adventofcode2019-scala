@@ -1,7 +1,8 @@
 import scala.io.Source
 
 
-var l = Source.fromFile("C:\\Users\\totetmatt\\IdeaProjects\\adventofcode2019\\input08")
+var l = Source
+  .fromFile("C:\\Users\\totetmatt\\IdeaProjects\\adventofcode2019\\input08")
   .getLines
   .toSeq
   .head
@@ -22,5 +23,4 @@ val mmap = Map('0'->'_','1'->'X','2'->' ')
   .foreach{ line =>
      line.foreach(x=>print(mmap(x)))
     println()
-
   }
