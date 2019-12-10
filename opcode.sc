@@ -1,7 +1,7 @@
 import scala.io.Source
 
 var sourceOpCode:String = Source
-  .fromFile("C:\\Users\\totetmatt\\IdeaProjects\\adventofcode2019\\input05")
+  .fromFile("/home/totetmatt/Projects/adventofcode2019-scala/input07")
   .getLines().toSeq.head
 val test = sourceOpCode.split(",").map(_.toInt)
 
@@ -9,7 +9,7 @@ def inst1(intCode:Array[Int], ptr1:Int,ptr2:Int,ptr3:Int) = intCode.update(ptr3,
 def inst2(intCode:Array[Int], ptr1:Int,ptr2:Int,ptr3:Int) = intCode.update(ptr3,intCode(ptr1) * intCode(ptr2))
 
 def inst3(intCode:Array[Int], ptr1:Int,value:Int) = intCode.update(ptr1,value)
-def inst4(intCode:Array[Int], ptr1:Int) = println(intCode(ptr1))
+def inst4(intCode:Array[Int], ptr1:Int) = intCode(ptr1)
 
 def inst5(intCode:Array[Int],ptr1:Int,ptr2:Int) = if(intCode(ptr1) != 0)  Some(intCode(ptr2)) else None
 def inst6(intCode:Array[Int],ptr1:Int,ptr2:Int) = if(intCode(ptr1) == 0)  Some(intCode(ptr2)) else None
@@ -38,32 +38,40 @@ def parseInstruction(intCode:Array[Int],ptr:Int) =  {
 }
 
 
-def intCodeEval(intCode:Array[Int], input:Array[Int], ptr:Int=0) : Array[Int] = {
+def intCodeEval(intCode:Array[Int], input:Array[Int], ptr:Int=0, output:Option[Int]=None) : Option[Int] = {
 
   val (instruction,ptr1,ptr2,ptr3) = parseInstruction(intCode,ptr)
 
   instruction match {
     case 1 => inst1(intCode,ptr1,ptr2,ptr3)
-      intCodeEval(intCode,input,ptr+4)
+      intCodeEval(intCode,input,ptr+4,output)
     case 2 => inst2(intCode,ptr1,ptr2,ptr3)
-      intCodeEval(intCode,input,ptr+4)
-    case 3 => inst3(intCode,ptr1,input(0))
-      intCodeEval(intCode,input,ptr+2)
-    case 4 => inst4(intCode,ptr1)
-      intCodeEval(intCode,input,ptr+2)
-    case 5 => intCodeEval(intCode,input,inst5(intCode,ptr1,ptr2).getOrElse(ptr+3))
+      intCodeEval(intCode,input,ptr+4,output)
+    case 3 => inst3(intCode,ptr1,input.head)
+      intCodeEval(intCode,input.tail,ptr+2,output)
+    case 4 =>
+      intCodeEval(intCode,input,ptr+2,Some(inst4(intCode,ptr1)))
 
-    case 6 => intCodeEval(intCode,input,inst6(intCode,ptr1,ptr2).getOrElse(ptr+3))
+    case 5 => intCodeEval(intCode,input,inst5(intCode,ptr1,ptr2).getOrElse(ptr+3),output)
+
+    case 6 => intCodeEval(intCode,input,inst6(intCode,ptr1,ptr2).getOrElse(ptr+3),output)
 
     case 7 => inst7(intCode,ptr1,ptr2,ptr3)
-      intCodeEval(intCode,input,ptr+4)
+      intCodeEval(intCode,input,ptr+4,output)
     case 8 => inst8(intCode,ptr1,ptr2,ptr3)
-      intCodeEval(intCode,input,ptr+4)
-    case 99 => intCode
+      intCodeEval(intCode,input,ptr+4,output)
+    case 99 => output
   }
-
-  intCode
 
 }
 
-intCodeEval(test,Array(5))
+Seq(4,3,2,1,0).foldLeft(0)((agg,el) =>  intCodeEval(test,Array(el,agg)).get )
+
+Seq(0,1,2,3,4)
+  .permutations
+  .map(
+    x=> x.foldLeft(0)((agg,el) =>  intCodeEval(test,Array(el,agg)).get)
+  ).map(
+    x=> Seq(5,6,7,8,9).permutations.map(p=> p.foldLeft(x)((agg,el) =>  intCodeEval(test,Array(el,agg)).get)).max
+  ).foreach(println)
+
